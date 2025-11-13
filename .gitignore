@@ -1,0 +1,36 @@
+# --- Python cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual environment ---
+.venv/
+env/
+venv/
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+
+# --- Environment variables ---
+.env
+.env.*
+
+# --- SQLite database (local dev only) ---
+*.db
+
+# --- Alembic cache ---
+alembic/versions/__pycache__/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+
+# --- Packaging ---
+build/
+dist/
+*.egg-info/

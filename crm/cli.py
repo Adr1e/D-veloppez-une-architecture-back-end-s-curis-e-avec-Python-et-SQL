@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from .db import get_db
 from .models import User, Role
 from .services.user_service import delete_user
-from .principal import principal_from_email as _principal
 from .security import hash_password
 from .seeds import seed_rbac
+from .auth import login_cli, logout, get_current_principal
 
 # Create the main Typer application
 app = typer.Typer(help="EPIC CRM CLI")
@@ -160,17 +160,19 @@ def users_promote(email: str, role_name: str = "gestion"):
 @users_app.command("delete")
 def users_delete(
     email: str = typer.Option(..., "--email", help="Email to delete"),
-    as_email: str = typer.Option(..., "--as-email", help="The acting user (must be admin)"),
 ):
     """
     Delete a user.
 
     Notes:
-        - Only users with the 'gestion' role can delete users.
-        - The acting user's email is checked through a Principal object.
+        - Only authenticated users with the right permissions/role
+          (checked in the service layer) can delete users.
+        - The acting user is retrieved from the persisted JWT token.
     """
+    # Get the currently authenticated principal from JWT
+    principal = get_current_principal()
+
     with get_db() as db:
-        principal = _principal(db, as_email)
         ok = delete_user(db, principal=principal, email=email)
 
         # Show the deletion result
@@ -192,6 +194,29 @@ def rbac_seed_cmd():
     with get_db() as db:
         seed_rbac(db)
         typer.echo("RBAC seed: OK")
+
+
+@app.command("login")
+def login_cmd():
+    """
+    Authenticate a user and store a JWT token locally.
+
+    Example:
+        epic-crm login
+    """
+    login_cli()
+
+
+@app.command("logout")
+def logout_cmd():
+    """
+    Remove the stored JWT token (logout).
+
+    Example:
+        epic-crm logout
+    """
+    logout()
+    typer.echo("Logged out")
 
 
 # Attach the users sub-command group to the main CLI application

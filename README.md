@@ -160,3 +160,6 @@ git push -u origin main
 ##  License
 
 MIT License – free to use, modify, and distribute.
+
+password for admin : YxfdEx9ccTsAWF_B new_admin@epic.local
+password for testuser : 9YaqJ6nwxcO0Xg06 test@test.com
