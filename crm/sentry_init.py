@@ -31,12 +31,19 @@ def init_sentry() -> None:
 
     try:
         import sentry_sdk
+        from sentry_sdk.integrations.excepthook import ExcepthookIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        from sentry_sdk.integrations.logging import LoggingIntegration
 
         sentry_sdk.init(
             dsn=dsn,
             environment=os.getenv("SENTRY_ENV", "development"),
-            # Keep performance tracing disabled by default unless explicitly set
             traces_sample_rate=float(os.getenv("SENTRY_TRACES", "0.0")),
+            integrations=[
+                ExcepthookIntegration(),   # capture unexpected exceptions
+                SqlalchemyIntegration(),    # capture DB-level errors
+                LoggingIntegration(level=None, event_level=None),
+            ],
         )
     except Exception as exc:  # pragma: no cover
         # Never block the app if Sentry fails to initialize

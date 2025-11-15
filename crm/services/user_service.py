@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Optional
+
 from sqlalchemy.orm import Session
+import sentry_sdk
 
 from ..models import User, Role
 from ..auth import ensure_admin, Principal
@@ -44,6 +46,13 @@ def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Journalisation Sentry : création d’un collaborateur
+    sentry_sdk.capture_message(
+        f"User created: {user.email}",
+        level="info",
+    )
+
     return user
 
 
@@ -72,6 +81,13 @@ def promote_user_to_role(db: Session, *, email: str, role_name: str = "gestion")
 
     user.role_id = role.id
     db.commit()
+
+    # Journalisation Sentry : modification / promotion d’un collaborateur
+    sentry_sdk.capture_message(
+        f"User {email} promoted to role {role_name}",
+        level="info",
+    )
+
     return True
 
 
@@ -92,6 +108,13 @@ def set_password(db: Session, *, email: str, new_password_plain: str) -> bool:
 
     user.password_hash = hash_password(new_password_plain)
     db.commit()
+
+    # Journalisation Sentry (bonus)
+    sentry_sdk.capture_message(
+        f"Password updated for user {email}",
+        level="info",
+    )
+
     return True
 
 
@@ -118,4 +141,11 @@ def delete_user(db: Session, *, principal: Optional[Principal], email: str) -> b
 
     db.delete(user)
     db.commit()
+
+    # Journalisation Sentry (bonus)
+    sentry_sdk.capture_message(
+        f"User deleted: {email}",
+        level="warning",
+    )
+
     return True
