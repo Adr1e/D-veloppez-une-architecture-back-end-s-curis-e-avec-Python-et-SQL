@@ -18,7 +18,7 @@ if config.config_file_name:
     fileConfig(config.config_file_name)
 
 # Import models metadata
-from crm.models import Base  
+from customer_relationship_mamagement.models import Base  
 target_metadata = Base.metadata
 
 

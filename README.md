@@ -1,36 +1,88 @@
-# EPIC Events CRM – Backend (SQLAlchemy + Typer CLI)
+# EPIC Events — Secure CRM Backend  
+A complete Python backend for managing clients, contracts, events, and collaborators, built with:
 
-A secure backend architecture built with **Python**, **SQLAlchemy**, **Alembic**, and **Typer CLI**.  
-This project provides a complete user/role/permission system (RBAC), contract & event tracking, and CLI tools to manage the system.
+- Python 3  
+- SQLAlchemy ORM  
+- Typer CLI  
+- Alembic (database migrations)  
+- Passlib (bcrypt hashing)  
+- JSON Web Tokens (JWT authentication)  
+- Sentry (logging and monitoring)
 
----
-
-##  Features
-
-- SQLAlchemy ORM models (Users, Clients, Contracts, Events, Roles, Permissions…)
-- Alembic migrations
-- Password hashing with bcrypt (Passlib)
-- Full RBAC system (roles + permissions)
-- Admin tools via Typer CLI
-- Secure user creation, promotion, deletion
-- Automatic timestamp updates
+This project implements a secure architecture with role-based access control (RBAC), CRUD operations, and an interactive command-line interface.
 
 ---
 
-##  Installation
+#  Features
 
-Clone the project:
+###  Security & Authentication
+- JWT-based session system  
+- Password hashing using **bcrypt**  
+- Secure login/logout  
+- Admin-only privileged actions  
+
+###  RBAC (Role-Based Access Control)
+- Roles (gestion, commercial, support…)  
+- Permissions (client.read, contract.write, event.write…)  
+- Automatic mapping between roles and allowed operations  
+
+### CRUD Operations
+- Manage **Users**  
+- Manage **Clients**  
+- Manage **Contracts**  
+- Manage **Events**  
+- Validation of payloads before database writes  
+
+### Developer Tooling
+- Typer CLI with:
+  - Interactive menu (`python -m crm.cli run`)
+  - Admin utilities
+  - Data creation/update/delete
+- Sentry integrated for:
+  - Logging unexpected errors  
+  - Tracking user/contract/event updates  
+
+---
+
+# Project Structure
+
+```
+crm/
+ ├── auth.py                  # Authentication + JWT
+ ├── cli.py                   # Command-line interface
+ ├── db.py                    # DB engine and session helper
+ ├── models.py                # SQLAlchemy ORM models
+ ├── security.py              # Password hashing
+ ├── principal.py             # Principal object after login
+ ├── seeds.py                 # Admin + RBAC seeding
+ ├── services/                # Business logic
+ │     ├── user_service.py
+ │     ├── client_service.py
+ │     ├── contract_service.py
+ │     └── event_service.py
+ ├── ui/                      # CLI table rendering + validators
+ │     ├── tables.py
+ │     └── validators.py
+
+alembic/
+ ├── env.py                   # Alembic environment
+ └── versions/                # Database migrations
+```
+
+---
+
+#  Installation
 
 ```bash
 git clone https://github.com/USERNAME/REPO.git
 cd REPO
 ```
 
-Create and activate a virtual environment:
+Create virtual environment:
 
 ```bash
-python3 -m venv env
-source env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 Install dependencies:
@@ -41,7 +93,7 @@ pip install -r requirements.txt
 
 ---
 
-##  Database setup
+#  Database Setup
 
 Run Alembic migrations:
 
@@ -49,117 +101,188 @@ Run Alembic migrations:
 alembic upgrade head
 ```
 
-Check the schema if needed:
-
-```bash
-python - <<'PY'
-from crm.models import Base
-print([t.name for t in Base.metadata.sorted_tables])
-PY
-```
-
 ---
 
-##  RBAC Seeding
+#  RBAC Seeding
 
-Populate roles + permissions:
+Create default roles + permissions:
 
 ```bash
 python -m crm.cli rbac-seed
 ```
 
----
-
-##  User Management (CLI)
-
-### Create a basic user
-
-```bash
-python -m crm.cli users create bob@epic.local --full-name "Bob"
-```
-
-### Promote a user to a role
-
-```bash
-python -m crm.cli users promote bob@epic.local --role-name support
-```
-
-### Create an admin (auto-promoted to role “gestion”)
+Create the main admin:
 
 ```bash
 python -m crm.cli users seed-admin
 ```
 
-### Delete a user (admin required)
+---
+
+#  Authentication
+
+Login:
 
 ```bash
-python -m crm.cli users delete --email bob@epic.local --as-email admin@epic.local
+python -m crm.cli login
 ```
 
----
-
-## Password hashing
-
-Passwords are hashed using **bcrypt** via Passlib:
-
-- `hash_password()` → hash a plaintext password
-- `verify_password()` → verify a password
-
----
-
-## Project structure
-
-```
-crm/
- ├── auth.py
- ├── cli.py
- ├── config.py
- ├── db.py
- ├── models.py
- ├── principal.py
- ├── rbac_seed.py
- ├── repositories/
- │     └── user_repo.py
- ├── security.py
- ├── seeds.py
- └── services/
-       └── user_service.py
-
-alembic/
- ├── env.py
- └── versions/
-```
-
----
-
-##  Example workflow
-
-This creates Bob → promotes him → deletes him while authenticated as admin.
+Logout:
 
 ```bash
-python -m crm.cli users seed-admin
-python -m crm.cli users create bob@epic.local --full-name "Bob"
-python -m crm.cli users promote bob@epic.local --role-name gestion
-python -m crm.cli users delete --email bob@epic.local --as-email admin@epic.local
+python -m crm.cli logout
 ```
 
 ---
 
-## Git commands to push your project
+#  User Management
+
+Create a collaborator:
+
+```bash
+python -m crm.cli users create user@mail.com --full-name "User Name"
+```
+
+Promote a user:
+
+```bash
+python -m crm.cli users promote user@mail.com --role-name support
+```
+
+Delete a user:
+
+```bash
+python -m crm.cli users delete --email user@mail.com
+```
+
+---
+
+#  Client Management
+
+Create a client:
+
+```bash
+python -m crm.cli clients create '{"full_name": "Client Test", "email": "client@mail.com"}'
+```
+
+Update a client:
+
+```bash
+python -m crm.cli clients update 1 '{"company": "NewCorp"}'
+```
+
+List clients:
+
+```bash
+python -m crm.cli clients list
+```
+
+---
+
+#  Contract Management
+
+Create a contract:
+
+```bash
+python -m crm.cli contracts create 1 '{"total_amount":1000,"amount_due":1000,"status":"PENDING"}'
+```
+
+Update a contract:
+
+```bash
+python -m crm.cli contracts update 1 '{"status":"SIGNED"}'
+```
+
+List contracts:
+
+```bash
+python -m crm.cli contracts list
+```
+
+---
+
+#  Event Management
+
+Create event:
+
+```bash
+python -m crm.cli events create 1 '{"event_date":"2025-06-01T10:00:00","location":"Paris","attendees":100}'
+```
+
+Update event:
+
+```bash
+python -m crm.cli events update 1 '{"attendees":150}'
+```
+
+List events:
+
+```bash
+python -m crm.cli events list
+```
+
+---
+
+#  Interactive Mode
+
+Launch the full interactive CRM:
+
+```bash
+python -m crm.cli run
+```
+
+This mode allows:
+- Login  
+- Create clients  
+- Create contracts  
+- Create events  
+- List all data  
+- Admin operations  
+
+---
+
+#  Sentry Integration
+
+Export environment variables:
+
+```bash
+export SENTRY_DSN="https://YOUR_KEY.ingest.de.sentry.io/PROJECT_ID"
+export SENTRY_ENV="development"
+export SENTRY_TRACES="0.0"
+```
+
+Test Sentry:
+
+```bash
+python -c "import sentry_sdk; sentry_sdk.init(dsn='$SENTRY_DSN'); 1/0"
+```
+
+---
+
+#  Database Schema
+
+The schema image is available at:
+ **crm_schema.png**  
+ https://dbdiagram.io/d/691cc4c66735e111706ab546
+ 
+---
+
+#  GitHub Deployment
 
 ```bash
 git add .
-git commit -m "Complete backend with RBAC + CLI + documentation"
-git branch -M main
-git remote add origin https://github.com/USERNAME/REPO.git
-git push -u origin main
+git commit -m "Full backend completed: CRUD + RBAC + Typer CLI + Sentry logging"
+git push origin main
 ```
 
 ---
 
-##  License
+#  Default Credentials (example)
 
-MIT License – free to use, modify, and distribute.
+- **Admin**  
+  Email: `new_admin@epic.local`  
+  Password: `YxfdEx9ccTsAWF_B`
 
-password for admin : YxfdEx9ccTsAWF_B new_admin@epic.local
-password for testuser : 9YaqJ6nwxcO0Xg06 test@test.com
+- **Test user**  
+  Email: `test@test.com`  
+  Password: `9YaqJ6nwxcO0Xg06`
