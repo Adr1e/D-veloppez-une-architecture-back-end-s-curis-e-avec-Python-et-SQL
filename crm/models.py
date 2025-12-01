@@ -89,7 +89,6 @@ class Client(Base):
     full_name = Column(String(255))
     company = Column(String(255))
     phone = Column(String(32))
-    mobile = Column(String(32))
 
     # Sales person responsible for this client.
     sales_contact_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))

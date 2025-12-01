@@ -1,5 +1,15 @@
 """Password hashing and verification utilities."""
 
+from __future__ import annotations
+
+# Suppress the bcrypt version warning from passlib
+# This occurs with bcrypt >= 4.1 where __about__ was removed
+import logging
+logging.getLogger("passlib.handlers.bcrypt").setLevel(logging.ERROR)
+
+import warnings
+warnings.filterwarnings("ignore", message=".*trapped.*error reading bcrypt version.*")
+
 from passlib.context import CryptContext
 
 # Password hashing context configured to use bcrypt.

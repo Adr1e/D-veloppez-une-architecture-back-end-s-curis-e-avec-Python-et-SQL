@@ -280,9 +280,21 @@ git push origin main
 #  Default Credentials (example)
 
 - **Admin**  
-  Email: `new_admin@epic.local`  
-  Password: `YxfdEx9ccTsAWF_B`
+  Email: admin@epic.local
+  Password: admin123
 
-- **Test user**  
-  Email: `test@test.com`  
-  Password: `9YaqJ6nwxcO0Xg06`
+commercial1@epic.local
+commercial2@epic.local
+
+controler la saisir utilisitaur avant d'envoyer json
+transformer la date fr en iso la ou j'exploite le json
+
+pour l'heure d'éxiger un format iso 
+au lieu de date time, date puis l'heure (pour que l'utilisateur ne se trompe pas)
+
+gestion d'exeption 
+
+chiffrements
+chiffre les infos quand tu les mets en base 
+et déchiffre pour les lire 
+example sous forme de décorateurs
