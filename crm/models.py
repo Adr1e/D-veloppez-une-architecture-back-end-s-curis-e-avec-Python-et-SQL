@@ -6,6 +6,8 @@ Design goals:
 - RBAC (roles/permissions/departments) is normalized (no hard-coded roles).
 """
 from __future__ import annotations
+from .security import EncryptedString
+
 
 from sqlalchemy import (
     Column,
@@ -81,30 +83,26 @@ class Client(Base):
 
     __tablename__ = "clients"
 
-    # Primary key.
     id = Column(Integer, primary_key=True)
 
-    # Contact and company information.
-    email = Column(String(255), unique=True)
-    full_name = Column(String(255))
-    company = Column(String(255))
-    phone = Column(String(32))
+    # Encrypted columns (stored in database)
+    _email_encrypted = Column(String(512), unique=True)
+    _full_name_encrypted = Column(String(512))
+    _phone_encrypted = Column(String(512))
+    _company_encrypted = Column(String(512))
 
-    # Sales person responsible for this client.
+    # Decrypted access via descriptors
+    email = EncryptedString("email")
+    full_name = EncryptedString("full_name")
+    phone = EncryptedString("phone")
+    company = EncryptedString("company")
+
+    # Non-encrypted fields
     sales_contact_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
+    created_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
+    updated_at = Column(DateTime, nullable=False, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
 
-    # Creation and update timestamps.
-    created_at = Column(
-        DateTime, nullable=False, server_default=func.current_timestamp()
-    )
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),  # Automatically updates on row change.
-    )
-
-    # Link back to the sales contact.
+    # AJOUTER CES RELATIONSHIPS :
     sales_contact = relationship(
         "User",
         back_populates="sales_clients",
@@ -112,7 +110,6 @@ class Client(Base):
         lazy="joined",
     )
 
-    # All contracts related to this client.
     contracts = relationship(
         "Contract",
         back_populates="client",
